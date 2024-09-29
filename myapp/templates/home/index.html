@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+{%load static%}
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Index - Knight Bootstrap Template</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+<!-- Favicons -->
+<link href="{% static 'assets/img/favicon.png' %}" rel="icon">
+<link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+<!-- Vendor CSS Files -->
+<link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+<link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+<link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+<link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+<link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+
+
+  <!-- Main CSS File -->
+  <link href="{% static 'assets/css/main.css'%}" rel="stylesheet">
+
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid position-relative d-flex align-items-center justify-content-between">
+
+      <a href="index.html" class="logo d-flex align-items-center me-auto me-xl-0">
+        <h1 class="sitename">ASLTOTEXT</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="#hero" class="active">Home</a></li>
+          <li><a href="#about">About</a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="main">
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero section " style="width: 100%;
+  height: 100%;
+  --color: rgba(114, 114, 114, 0.3);
+  background-color: #191a1a;
+  background-image: linear-gradient(0deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%,transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%,transparent),
+      linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%,transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%,transparent);
+  background-size: 55px 55px; 
+  font
+  "
+  
+  >
+
+      <div class="container text-center">
+
+        <div class="row justify-content-center" data-aos="zoom-out">
+          <div class="col-lg-8">
+              <img src="assets/img/hero-logo.png" alt="" class="img-fluid mb-3">
+              <h2><span style="color:white">American Sign Language To Tagalog</span></h2>
+              <div id="percentage-container" style="display: none;">
+                <div id="percentage-text">0%</div>
+            </div>
+            <div id="result"></div>
+            <button class="shadow__btn" id="translate">Translate</button>             
+            </div>
+      </div>
+
+      <script>
+
+        document.getElementById('translate').onclick = function() {
+       document.getElementById('result').setTextContent = '';
+       
+          const percentageContainer = document.getElementById('percentage-container');
+            const percentageText = document.getElementById('percentage-text');
+            const resultDiv = document.getElementById('result');
+        
+            percentageContainer.style.display = 'block';
+            percentageText.innerText = '0%';
+        
+            // Start the translation process
+            fetch('/process-video/')
+                .then(response => response.json())
+                .then(data => {
+                    resultDiv.innerText = data.result; // Update result
+                    percentageText.innerText = '100%'; // Set to 100% once done
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    percentageContainer.style.display = 'none'; // Hide percentage on error
+                });
+        
+            // Periodically fetch percentage completion
+            const interval = setInterval(() => {
+                fetch('/process-video/')
+                    .then(response => response.json())
+                    .then(data => {
+                        percentageText.innerText = data.percentage.toFixed(2) + '%'; // Update percentage
+                    })
+                    .catch(error => {
+                        console.error('Error fetching percentage:', error);
+                        clearInterval(interval);
+                    });
+            }, 1000); // Fetch every second
+        };
+        </script>
+
+            
+          </div>
+        </div>
+      </div>
+
+    </section><!-- /Hero Section -->
+
+    <!-- About Section -->
+    <section id="about" class="about section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>About</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row gy-4">
+          <div class="col-lg-6">
+            <img src="assets/img/about.jpg" class="img-fluid" alt="">
+          </div>
+          <div class="col-lg-6 content">
+            <h3>Voluptatem dignissimos provident</h3>
+            <p class="fst-italic">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+              magna aliqua.
+            </p>
+            <ul>
+              <li><i class="bi bi-check2-all"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
+              <li><i class="bi bi-check2-all"></i> <span>Duis aute irure dolor in reprehenderit in voluptate velit.</span></li>
+              <li><i class="bi bi-check2-all"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate trideta storacalaperda mastiro dolore eu fugiat nulla pariatur.</span></li>
+            </ul>
+            <p>
+              Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+              velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- /About Section -->
+
+    <!-- Team Section -->
+    <section id="team" class="team section">
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Team</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+      </div><!-- End Section Title -->
+      <div class="site-section slider-team-wrap">
+        <div class="container">
+
+          <div class="slider-nav d-flex justify-content-end mb-3">
+            <a href="#" class="js-prev js-custom-prev"><i class="bi bi-arrow-left-short"></i></a>
+            <a href="#" class="js-next js-custom-next"><i class="bi bi-arrow-right-short"></i></a>
+          </div>
+
+          <div class="swiper init-swiper" data-aos="fade-up" data-aos-delay="100">
+            <script type="application/json" class="swiper-config">
+              {
+                "loop": true,
+                "speed": 600,
+                "autoplay": {
+                  "delay": 5000
+                },
+                "slidesPerView": "1",
+                "pagination": {
+                  "el": ".swiper-pagination",
+                  "type": "bullets",
+                  "clickable": true
+                },
+                "navigation": {
+                  "nextEl": ".js-custom-next",
+                  "prevEl": ".js-custom-prev"
+                },
+                "breakpoints": {
+                  "640": {
+                    "slidesPerView": 2,
+                    "spaceBetween": 30
+                  },
+                  "768": {
+                    "slidesPerView": 3,
+                    "spaceBetween": 30
+                  },
+                  "1200": {
+                    "slidesPerView": 3,
+                    "spaceBetween": 30
+                  }
+                }
+              }
+            </script>
+            <div class="swiper-wrapper">
+              <div class="swiper-slide">
+                <div class="team">
+                  <div class="pic">
+                    <img src="assets/img/team/team-1.jpg" alt="Image" class="img-fluid">
+                  </div>
+                  <h3 clas="">
+                    <a href="#"><span class="">Jeremy</span> Walker</a>
+                  </h3>
+                  <span class="d-block position">CEO, Founder, Atty.</span>
+                  <p>
+                    Separated they live in. Separated they live in Bookmarksgrove
+                    right at the coast of the Semantics, a large language ocean.
+                  </p>
+                  <p class="mb-0">
+                    <a href="#" class="more dark">Learn More <span class="bi bi-arrow-right-short"></span></a>
+                  </p>
+                </div>
+              </div>
+              <div class="swiper-slide">
+                <div class="team">
+                  <div class="pic">
+                    <img src="assets/img/team/team-2.jpg" alt="Image" class="img-fluid">
+                  </div>
+                  <h3 clas="">
+                    <a href="#"><span class="">Lawson</span> Arnold</a>
+                  </h3>
+                  <span class="d-block position">CEO, Founder, Atty.</span>
+                  <p>
+                    Separated they live in. Separated they live in Bookmarksgrove
+                    right at the coast of the Semantics, a large language ocean.
+                  </p>
+                  <p class="mb-0">
+                    <a href="#" class="more dark">Learn More <span class="bi bi-arrow-right-short"></span></a>
+                  </p>
+                </div>
+              </div>
+              <div class="swiper-slide">
+                <div class="team">
+                  <div class="pic">
+                    <img src="assets/img/team/team-3.jpg" alt="Image" class="img-fluid">
+                  </div>
+                  <h3 clas="">
+                    <a href="#"><span class="">Patrik</span> White</a>
+                  </h3>
+                  <span class="d-block position">CEO, Founder, Atty.</span>
+                  <p>
+                    Separated they live in. Separated they live in Bookmarksgrove
+                    right at the coast of the Semantics, a large language ocean.
+                  </p>
+                  <p class="mb-0">
+                    <a href="#" class="more dark">Learn More <span class="bi bi-arrow-right-short"></span></a>
+                  </p>
+                </div>
+              </div>
+              <div class="swiper-slide">
+                <div class="team">
+                  <div class="pic">
+                    <img src="assets/img/team/team-4.jpg" alt="Image" class="img-fluid">
+                  </div>
+                  <h3 clas="">
+                    <a href="#"><span class="">Kathryn</span> Ryan</a>
+                  </h3>
+                  <span class="d-block position">CEO, Founder, Atty.</span>
+                  <p>
+                    Separated they live in. Separated they live in Bookmarksgrove
+                    right at the coast of the Semantics, a large language ocean.
+                  </p>
+                  <p class="mb-0">
+                    <a href="#" class="more dark">Learn More <span class="bi bi-arrow-right-short"></span></a>
+                  </p>
+                </div>
+              </div>
+              <!-- <div class="swiper-slide"></div> -->
+            </div>
+          </div>
+        </div>
+        <!-- /.container -->
+      </div>
+    </section><!-- /Team Section -->
+
+    <!-- Contact Section -->
+    
+  </main>
+
+  <footer id="footer" class="footer dark-background">
+
+   
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">Knight</strong> <span>All Rights Reserved</span></p>
+      <div class="credits">
+      </div>
+    </div>
+
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+
+
+  <!-- Vendor JS Files --><!-- Vendor JS Files -->
+<script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+<script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+<script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+<script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+<script src="{% static 'assets/vendor/imagesloaded/imagesloaded.pkgd.min.js' %}"></script>
+<script src="{% static 'assets/vendor/isotope-layout/isotope.pkgd.min.js' %}"></script>
+
+<!-- Main JS File -->
+<script src="{% static 'assets/js/main.js' %}"></script>
+
+
+</body>
+
+</html>
