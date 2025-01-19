@@ -21,5 +21,8 @@ from myapp import views
 
 urlpatterns = [
     path('', views.home, name='home'),  # Home route
-    path('process-video/', views.process_video, name='process_video'),  # Video processing route
+    path('process-video/', views.process_video, name='process_video'),  # Video processing rout
+    path('', views.process_video, name='process_video')
 ]
+
+
