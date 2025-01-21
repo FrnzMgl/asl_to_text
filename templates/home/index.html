@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Translator</title>
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js for Interactivity (CDN) -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
+      defer
+    ></script>
+
+    <!-- FontAwesome for Icons (CDN) -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="bg-gray-100 font-sans antialiased">
+    <!-- Main container -->
+    <div
+      class="min-h-screen flex justify-center items-center px-4 py-12 bg-gray-100"
+    >
+      <div
+        class="max-w-4xl w-full bg-white rounded-xl shadow-lg overflow-hidden"
+      >
+        <!-- Header Section -->
+        <header class="bg-gray-900 p-4 text-white text-center">
+          <h1 class="text-3xl font-semibold">Sign Language to Phrase Translator</h1>
+          <p class="mt-1 text-sm">
+            Upload a sign video, and we’ll translate the content into text for you.
+          </p>
+        </header>
+
+        <!-- Main content section -->
+        <div class="px-8 py-6">
+          <div x-data="{ file: null, previewURL: '', translation: '', isLoading: false }">
+            <!-- Video File Upload and Preview -->
+            <div>
+              <label for="videoUpload" class="text-gray-700 text-lg font-medium">Choose Video</label>
+              <input
+                type="file"
+                id="videoUpload"
+                accept="video/mp4"
+                @change="file = $event.target.files[0]; previewURL = URL.createObjectURL(file)"
+                class="mt-2 block w-full p-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <!-- Video Preview Section -->
+              <div x-show="file" x-cloak class="mt-4">
+                <p class="text-sm text-gray-500">Video Preview:</p>
+                <video
+                  :src="previewURL"
+                  controls
+                  class="w-full rounded-lg mt-2 shadow-lg max-h-80"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+
+            <!-- Translation Section -->
+            <div class="mt-6">
+              <div class="bg-gray-100 rounded-lg p-4 shadow-sm">
+                <p class="font-semibold text-lg">Translated Text</p>
+                <textarea
+                  x-model="translation"
+                  readonly
+                  class="w-full mt-2 p-4 bg-white border-2 border-gray-300 rounded-lg shadow-sm text-gray-600 focus:outline-none"
+                  rows="6"
+                  placeholder="Translated text will appear here."
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Footer and Call to Action -->
+            <div class="mt-6 text-center">
+              <button
+                @click="isLoading = true; uploadVideo()"
+                class="bg-blue-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-blue-700 focus:outline-none"
+                :disabled="isLoading"
+              >
+                <span x-show="!isLoading">Translate Video</span>
+                <span x-show="isLoading">Processing...</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function uploadVideo() {
+        const fileInput = document.querySelector('#videoUpload');
+        const file = fileInput.files[0];
+
+        if (!file) {
+          alert('Please select a video to upload.');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('video', file);
+
+        fetch('/lstm', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'), // Ensure CSRF protection
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.error) {
+              alert(data.error);
+              return;
+            }
+            document.querySelector('[x-data]').__x.$data.translation =
+              data.data.final_translation
+              document.querySelector('[x-data]').__x.$data.translation = data.data.final_translation || 'No translation found';
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+          })
+          .finally(() => {
+            document.querySelector('[x-data]').__x.$data.isLoading = false;
+          });
+      }
+
+      function getCookie(name) {
+        const cookieValue = document.cookie
+          .split('; ')
+          .find((row) => row.startsWith(name + '='))
+          ?.split('=')[1];
+        return cookieValue;
+      }
+    </script>
+  </body>
+</html>
