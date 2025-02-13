@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-Time Hand and Pose Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+  </head>
+  <body class="bg-gray-100">
+    <div class="flex justify-center items-center">
+      <video id="video" width="640" height="480" autoplay></video>
+      <canvas id="canvas" width="640" height="480" class="hidden"></canvas>
+    </div>
+
+    <script>
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Start video and process frames
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          video.srcObject = stream;
+        })
+        .catch((err) => {
+          console.log('Error accessing video:', err);
+        });
+
+      function startProcessing() {
+        const context = canvas.getContext('2d');
+        video.addEventListener('play', function() {
+          function draw() {
+            context.drawImage(video, 0, 0, video.width, video.height);
+
+            // Send the current frame to the backend for keypoint detection
+            fetch('/process_frame/', {
+              method: 'POST',
+              body: new URLSearchParams({
+                frame: canvas.toDataURL(),
+              }),
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.keypoints) {
+                  drawKeypoints(data.keypoints);
+                }
+              })
+              .catch((error) => console.error('Error:', error));
+
+            requestAnimationFrame(draw);
+          }
+          draw();
+        });
+      }
+
+      // Draw detected keypoints on the canvas
+      function drawKeypoints(keypoints) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear previous keypoints
+        keypoints.forEach(point => {
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+          ctx.fillStyle = 'red';
+          ctx.fill();
+        });
+      }
+
+      startProcessing();
+    </script>
+  </body>
+</html>

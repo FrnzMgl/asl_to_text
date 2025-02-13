@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 import mediapipe as mp
 import pandas as pd
-
+import tempfile
 # Create your views here.
 def pages(request):
     return HttpResponse("This is the pages view")
@@ -15,6 +15,7 @@ def pages(request):
 def home(request):
     context = {}
     return render(request, 'home/index.html', context)
+
 
 def lstm(request):
     context = {}
@@ -164,18 +165,103 @@ def lstm(request):
     # Test with a video
     translations = "".join(translate_signs_from_video(video_path))
     final_lexicon = match_translation(translations)
-
+    print(final_lexicon)
 # Store the final lexicon in the context
     context['final_translation'] = final_lexicon
 
     return JsonResponse({'message': 'Success', 'data': context}, status=200)
 
+def linktrans(request):
+    context = {}
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+    video_url = request.POST.get("video_url")  # Get the YouTube URL
+    if not video_url:
+        return JsonResponse({'error': 'No video URL provided'}, status=400)
+
+    try:
+        video_path = download_youtube_video(video_url)  # Download YouTube video
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+    # Load Lexicon
+    lexicon_path = os.path.join(settings.BASE_DIR, 'resources', 'lexicon.csv')
+    lexicon_df = pd.read_csv(lexicon_path)
+    lexicon_dict = dict(zip(lexicon_df['ASL Structure'], lexicon_df['Tagalog']))
+
+    # Load Model
+    model = tf.keras.models.load_model(os.path.join(settings.BASE_DIR, 'resources', 'asl_model13.h5'), compile=False)
+    label_encoder_classes = np.load(os.path.join(settings.BASE_DIR, 'resources', 'classes.npy'))
+
+    # Process Video and Get Translation
+    final_translation = translate_signs_from_video(video_path, model, label_encoder_classes, lexicon_dict, context)
+
+    context['final_translation'] = final_translation
+
+    return JsonResponse({'message': 'Success', 'data': context}, status=200)
 
     
 
-def knight(request):
-    return render(request, 'knight/index.html')
+def v2t(request):
+    return render(request, 'video/index.html')
+
+def l2t(request):
+    return render(request, 'link/index.html')
+
+def test(request): 
+    return render(request, 'test/index.html')
 
 
 
+from django.http import StreamingHttpResponse
+import cv2
 
+# Function to generate video frames for streaming
+def generate_video_frames(video_path):
+    cap = cv2.VideoCapture(video_path)
+
+    while cap.isOpened():
+        success, frame = cap.read()
+        if not success:
+            break
+
+        # Encode frame as JPEG
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame_bytes = buffer.tobytes()
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+    cap.release()
+
+# Endpoint to serve video frames for live streaming
+def video_feed(request):
+    video_path = request.GET.get("video_path", "")
+    if not video_path or not os.path.exists(video_path):
+        return HttpResponse("Invalid video path", status=400)
+
+    return StreamingHttpResponse(generate_video_frames(video_path),
+                                 content_type="multipart/x-mixed-replace; boundary=frame")
+
+# Update your LSTM processing function to return the video path
+def lstm(request):
+    context = {}
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+    
+    video_file = request.FILES['video']
+    
+    # Save the uploaded video to a temporary directory
+    temp_video_path = os.path.join(settings.MEDIA_ROOT, video_file.name)
+    with open(temp_video_path, 'wb+') as destination:
+        for chunk in video_file.chunks():
+            destination.write(chunk)
+
+    # Process video using your model (Modify this if needed)
+    translations = "example_translation"  # Replace with actual translation logic
+    final_lexicon = "example_translation_in_tagalog"  # Replace with actual lexicon matching
+
+    context['final_translation'] = final_lexicon
+
+    return JsonResponse({'message': 'Success', 'data': context, 'video_path': temp_video_path}, status=200)

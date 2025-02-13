@@ -1,0 +1,110 @@
+<div x-data="{ file: null, previewURL: '', translation: '', isLoading: false, videoPath: '' }">
+  <label for="videoUpload" class="text-gray-700 text-lg font-medium">Choose Video</label>
+  <input
+      type="file"
+      id="videoUpload"
+      accept="video/mp4"
+      @change="file = $event.target.files[0]; previewURL = URL.createObjectURL(file)"
+      class="mt-2 block w-full p-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+
+  <!-- Video Preview Before Upload -->
+  <div x-show="file" x-cloak class="mt-4">
+      <p class="text-sm text-gray-500">Video Preview:</p>
+      <video :src="previewURL" controls class="w-full rounded-lg mt-2 shadow-lg max-h-80"></video>
+  </div>
+
+  <!-- Processing and Translation Section -->
+  <div class="mt-6">
+      <div class="bg-gray-100 rounded-lg p-4 shadow-sm">
+          <p class="font-semibold text-lg">Translated Text</p>
+          <textarea
+              x-model="translation"
+              readonly
+              class="w-full mt-2 p-4 bg-white border-2 border-gray-300 rounded-lg shadow-sm text-gray-600 focus:outline-none"
+              rows="6"
+              placeholder="Translated text will appear here."
+          ></textarea>
+      </div>
+  </div>
+
+  <!-- Buttons: Upload & View Processed Video -->
+  <div class="mt-2 text-center">
+      <button
+          @click="isLoading = true; uploadVideo()"
+          class="bg-blue-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-blue-700 focus:outline-none"
+          :disabled="isLoading"
+      >
+          <span x-show="!isLoading">Translate Video</span>
+          <span x-show="isLoading">Processing...</span>
+      </button>
+
+      <button
+          x-show="videoPath"
+          @click="startVideoStream(videoPath)"
+          class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700"
+      >
+          View Processed Video
+      </button>
+  </div>
+</div>
+
+<!-- Video Stream Display -->
+<div class="mt-6" x-show="videoPath">
+  <p class="font-semibold text-lg">Processed Video:</p>
+  <img id="videoStream" src="" class="w-full rounded-lg mt-2 shadow-lg max-h-80">
+</div>
+
+<script>
+  let lastVideoPath = ""; // Store the last video path
+
+  function uploadVideo() {
+      const fileInput = document.querySelector('#videoUpload');
+      const file = fileInput.files[0];
+
+      if (!file) {
+          alert('Please select a video to upload.');
+          return;
+      }
+
+      const formData = new FormData();
+      formData.append('video', file);
+
+      fetch('/lstm', {
+          method: 'POST',
+          body: formData,
+          headers: {
+              'X-CSRFToken': getCookie('csrf-token'),
+          },
+      })
+      .then((response) => response.json())
+      .then((data) => {
+          if (data.error) {
+              alert(data.error);
+              return;
+          }
+
+          // Update translation text
+          document.querySelector('[x-data]').__x.$data.translation = data.data.final_translation || 'No translation found';
+
+          // Store video path for streaming
+          document.querySelector('[x-data]').__x.$data.videoPath = data.video_path;
+          lastVideoPath = data.video_path;
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+          alert('An error occurred. Please try again.');
+      })
+      .finally(() => {
+          document.querySelector('[x-data]').__x.$data.isLoading = false;
+      });
+  }
+
+  function startVideoStream(videoPath) {
+      document.getElementById("videoStream").src = "/video_feed/?video_path=" + encodeURIComponent(videoPath);
+  }
+
+  function getCookie(name) {
+      return document.querySelector(`meta[name="${name}"]`)?.content || '';
+  }
+</script>
